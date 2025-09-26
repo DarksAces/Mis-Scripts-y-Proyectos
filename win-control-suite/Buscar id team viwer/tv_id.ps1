@@ -4,12 +4,12 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit
 }
 
-# Configuración: ruta del archivo de configuración Zabbix
+# Configuraciï¿½n: ruta del archivo de configuraciï¿½n Zabbix
 $configPaths = @(
-    "C:\windows\idenPC.cfg" # Asegurarse de que esta ruta esté incluida
+    "C:\windows\idenPC.cfg" # Asegurarse de que esta ruta estï¿½ incluida
 )
 
-# Función para buscar TeamViewer dinámicamente en el registro
+# Funciï¿½n para buscar TeamViewer dinï¿½micamente en el registro
 function Find-TeamViewerPath {
     $basePaths = @(
         'HKEY_LOCAL_MACHINE\SOFTWARE',
@@ -25,7 +25,7 @@ function Find-TeamViewerPath {
                 return $teamViewerPath
             }
             
-            # Buscar versiones específicas de TeamViewer
+            # Buscar versiones especï¿½ficas de TeamViewer
             $teamViewerQuery = reg query "$basePath" /k 2>$null
             if ($LASTEXITCODE -eq 0) {
                 $subKeys = $teamViewerQuery | Where-Object { $_ -match "TeamViewer" }
@@ -49,19 +49,19 @@ function Find-TeamViewerPath {
     return 'HKEY_LOCAL_MACHINE\SOFTWARE\TeamViewer'
 }
 
-# Buscar ruta válida para ClientID en registro
+# Buscar ruta vï¿½lida para ClientID en registro
 $validPath = Find-TeamViewerPath
 
-# Construir línea UserParameter (corregido el formato)
+# Construir lï¿½nea UserParameter (corregido el formato)
 $userParameterLine = "UserParameter=dosi.tw,reg query `"$validPath`" /v ClientID"
 
-# Buscar primer archivo válido y añadir línea si no existe
+# Buscar primer archivo vï¿½lido y aï¿½adir lï¿½nea si no existe
 $archivoModificado = $false
 foreach ($configPath in $configPaths) {
     if (Test-Path $configPath) {
         $content = Get-Content $configPath -Raw -ErrorAction SilentlyContinue
         if ($content -notmatch [regex]::Escape($userParameterLine)) {
-            # Asegurar que hay un salto de línea antes de añadir
+            # Asegurar que hay un salto de lï¿½nea antes de aï¿½adir
             if ($content -and -not $content.EndsWith("`n") -and -not $content.EndsWith("`r`n")) {
                 Add-Content -Path $configPath -Value "" -Encoding UTF8 -ErrorAction SilentlyContinue
             }
@@ -72,7 +72,7 @@ foreach ($configPath in $configPaths) {
     }
 }
 
-# Si no se modificó ningún archivo, crear el primero con la línea
+# Si no se modificï¿½ ningï¿½n archivo, crear el primero con la lï¿½nea
 if (-not $archivoModificado) {
     try {
         Set-Content -Path $configPaths[0] -Value $userParameterLine -Encoding UTF8 -ErrorAction SilentlyContinue
@@ -82,7 +82,7 @@ if (-not $archivoModificado) {
     }
 }
 
-# --- Autodestrucción ---
+# --- Autodestrucciï¿½n ---
 $vbsScript = @"
 WScript.Sleep 2000
 Set fso = CreateObject(""Scripting.FileSystemObject"")
