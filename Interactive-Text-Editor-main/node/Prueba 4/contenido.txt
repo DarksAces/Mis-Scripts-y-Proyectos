@@ -8,3 +8,4 @@ Descripcion  unid/lit x  prec.= importe
  NACHOS ESTILO S     1 x  1.00 =    1.00
 ----------------------------------------
                       Tot.EUROS    74.50  
+aaa
