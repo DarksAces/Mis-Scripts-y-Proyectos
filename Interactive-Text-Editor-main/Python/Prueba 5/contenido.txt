@@ -1,4 +1,4 @@
-Descripcion  unid/lit x  prec.= importe 
+Descripcion  unid/lit x  prec.= importe
 ----------------------------------------
  T- REX EL GRAN      1 x 17.00 =   17.00
  VACIADO 1/2 AC      1 x  1.50 =    1.50

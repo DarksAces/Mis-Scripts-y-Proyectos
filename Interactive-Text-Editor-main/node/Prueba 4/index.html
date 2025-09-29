@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Live</title>
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Consolas, monospace;
+      font-size: 18px;
+      padding: 20px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      margin: 0;
+    }
+    #editor {
+      width: 100%;
+      height: 60vh;
+      background-color: #2e2e2e;
+      color: white;
+      font-family: Consolas, monospace;
+      font-size: 18px;
+      border: none;
+      padding: 10px;
+      resize: none;
+      box-sizing: border-box;
+      outline: none;
+    }
+    #images-container {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #images-container img {
+      max-width: 150px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #images-container img:hover {
+      transform: scale(1.05);
+      border-color: #777;
+    }
+    #status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #333;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    .saved {
+      color: #4CAF50;
+    }
+    .saving {
+      color: #FF9800;
+    }
+  </style>
+</head>
+<body>
+  <div id="status" class="saved">Guardado</div>
+  <textarea id="editor" placeholder="Escribe aquí tu contenido..."></textarea>
+  <div id="images-container"></div>
+  
+  <script>
+    const editor = document.getElementById('editor');
+    const status = document.getElementById('status');
+
+    // Función para actualizar el estado
+    function updateStatus(isSaved) {
+      if (isSaved) {
+        status.textContent = 'Sincronizado';
+        status.className = 'saved';
+      } else {
+        status.textContent = 'Guardando...';
+        status.className = 'saving';
+      }
+    }
+
+    // Cargar contenido inicial
+    window.electronAPI.onFileChange((text) => {
+      editor.value = text;
+      updateStatus(true);
+    });
+
+    // Manejar cambios externos del archivo (ESTE ES EL IMPORTANTE)
+    window.electronAPI.onExternalFileChange((text) => {
+      // Guardar posición del cursor
+      const cursorPosition = editor.selectionStart;
+      
+      // Actualizar contenido
+      editor.value = text;
+      
+      // Restaurar posición del cursor
+      setTimeout(() => {
+        editor.setSelectionRange(cursorPosition, cursorPosition);
+        editor.focus();
+      }, 10);
+      
+      updateStatus(true);
+      console.log('Archivo actualizado desde cambio externo');
+    });
+
+    // Guardado manual con Ctrl+S (opcional)
+    editor.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        window.electronAPI.saveFile(editor.value);
+        updateStatus(false);
+        setTimeout(() => updateStatus(true), 100);
+      }
+    });
+
+    // Cargar imágenes
+    window.electronAPI.onLoadImages((images) => {
+      const container = document.getElementById('images-container');
+      container.innerHTML = '';
+      images.forEach(imgPath => {
+        const img = document.createElement('img');
+        img.src = imgPath;
+        img.title = imgPath.split('/').pop();
+        container.appendChild(img);
+      });
+    });
+
+    // Manejar clicks en imágenes para insertarlas en el texto
+    document.getElementById('images-container').addEventListener('click', (e) => {
+      if (e.target.tagName === 'IMG') {
+        const imageName = e.target.title;
+        const cursorPos = editor.selectionStart;
+        const textBefore = editor.value.substring(0, cursorPos);
+        const textAfter = editor.value.substring(cursorPos);
+        
+        editor.value = textBefore + `[imagen: ${imageName}]` + textAfter;
+        editor.focus();
+        editor.setSelectionRange(cursorPos + `[imagen: ${imageName}]`.length, cursorPos + `[imagen: ${imageName}]`.length);
+        
+        // Trigger save
+        editor.dispatchEvent(new Event('input'));
+      }
+    });
+  </script>
+</body>
+</html>
