@@ -93,17 +93,20 @@
       // Guardar posición del cursor
       const cursorPosition = editor.selectionStart;
       
-      // Actualizar contenido
+      console.log('Recibido cambio externo en el frontend');
+      
+      // Actualizar contenido SIEMPRE
       editor.value = text;
       
       // Restaurar posición del cursor
       setTimeout(() => {
-        editor.setSelectionRange(cursorPosition, cursorPosition);
+        if (cursorPosition <= text.length) {
+          editor.setSelectionRange(cursorPosition, cursorPosition);
+        }
         editor.focus();
       }, 10);
       
       updateStatus(true);
-      console.log('Archivo actualizado desde cambio externo');
     });
 
     // Guardado manual con Ctrl+S (opcional)

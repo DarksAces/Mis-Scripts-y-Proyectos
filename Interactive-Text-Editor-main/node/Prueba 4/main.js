@@ -45,34 +45,82 @@ function createWindow() {
     loadAndSendImages();
   });
 
-  // Vigilar cambios externos en contenido.txt (MUY IMPORTANTE)
+  // Vigilancia ROBUSTA del archivo con múltiples métodos
   if (fs.existsSync(filePath)) {
     console.log('Iniciando vigilancia del archivo:', filePath);
     
+    let lastContent = '';
+    let lastMtime = 0;
+    
+    // Leer contenido inicial
+    try {
+      lastContent = fs.readFileSync(filePath, 'utf-8');
+      const stats = fs.statSync(filePath);
+      lastMtime = stats.mtime.getTime();
+    } catch (error) {
+      console.error('Error leyendo archivo inicial:', error);
+    }
+    
+    // Método 1: fs.watch (para editores que escriben directamente)
     fs.watch(filePath, { persistent: true }, (eventType, filename) => {
-      console.log('Evento detectado:', eventType, filename);
+      console.log('fs.watch - Evento detectado:', eventType, filename);
       
       if (eventType === 'change') {
-        // Pequeño delay para asegurar que el archivo se escribió completamente
         setTimeout(() => {
-          loadAndSendContent(true);
+          checkFileChanges();
         }, 100);
       }
     });
+    
+    // Método 2: Polling cada 500ms (más confiable)
+    const pollInterval = setInterval(() => {
+      checkFileChanges();
+    }, 500);
+    
+    // Función para verificar cambios reales
+    function checkFileChanges() {
+      try {
+        if (fs.existsSync(filePath)) {
+          const stats = fs.statSync(filePath);
+          const currentMtime = stats.mtime.getTime();
+          
+          // Solo si el archivo realmente cambió
+          if (currentMtime !== lastMtime) {
+            const currentContent = fs.readFileSync(filePath, 'utf-8');
+            
+            if (currentContent !== lastContent) {
+              console.log('¡CAMBIO DETECTADO! Enviando actualización...');
+              console.log('Contenido anterior:', lastContent.substring(0, 50));
+              console.log('Contenido nuevo:', currentContent.substring(0, 50));
+              
+              lastContent = currentContent;
+              lastMtime = currentMtime;
+              
+              if (win && win.webContents) {
+                win.webContents.send('external-file-changed', currentContent);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error verificando cambios:', error);
+      }
+    }
+    
+    // Limpiar interval cuando se cierre la app
+    app.on('before-quit', () => {
+      clearInterval(pollInterval);
+    });
+    
   } else {
     console.log('Archivo no existe, creándolo...');
     fs.writeFileSync(filePath, '', 'utf-8');
     
-    // Iniciar vigilancia después de crear el archivo
-    fs.watch(filePath, { persistent: true }, (eventType, filename) => {
-      console.log('Evento detectado:', eventType, filename);
-      
-      if (eventType === 'change') {
-        setTimeout(() => {
-          loadAndSendContent(true);
-        }, 100);
-      }
-    });
+    // Reiniciar la vigilancia después de crear el archivo
+    setTimeout(() => {
+      createWindow();
+    }, 100);
+    return;
   }
 
   // Vigilar cambios en la carpeta de imágenes
