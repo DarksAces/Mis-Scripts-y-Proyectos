@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Prueba Electron</title>
+<style>
+  body { background-color: #1e1e1e; color: white; text-align: center; }
+  img { max-width: 100%; margin: 10px 0; }
+</style>
+</head>
+<body>
+<h1 id="text">¡Hola Mundo!</h1>
+<div id="banner-top"></div>
+<div id="mobile"></div>
+<div id="banner-bottom"></div>
+
+<script>
+  // Usar la API segura expuesta por preload.js
+  window.electronAPI.onLoadImages((images) => {
+    const { bannersTop, mobileImgs, bannersBottom } = images;
+
+    const topDiv = document.getElementById('banner-top');
+    const mobileDiv = document.getElementById('mobile');
+    const bottomDiv = document.getElementById('banner-bottom');
+
+    bannersTop.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      topDiv.appendChild(img);
+    });
+
+    mobileImgs.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      mobileDiv.appendChild(img);
+    });
+
+    bannersBottom.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      bottomDiv.appendChild(img);
+    });
+  });
+
+  window.electronAPI.onFileChange((text) => {
+    const h1 = document.getElementById('text');
+    h1.textContent = text;
+  });
+</script>
+</body>
+</html>
