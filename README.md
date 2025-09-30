@@ -1,9 +1,9 @@
-# 📂 Mis Scripts
+## 📂 Mis Scripts
 
+
+---
 Bienvenido a este repositorio, un espacio donde organizo y guardo scripts, utilidades y experimentos de programación.
 Aquí encontrarás desde pruebas rápidas hasta pequeños programas que he creado para aprender y automatizar tareas.
----
-
 
 ## 📌 Objetivo
 
