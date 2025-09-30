@@ -5,8 +5,8 @@
 <title>Mobile Movible y Escalable</title>
 <style>
   body {
-    background-color: #1e1e1e;
-    color: white;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
     font-family: Consolas, monospace;
     font-size: 28px;
     margin: 0;
@@ -19,11 +19,21 @@
   }
   .fixed-container {
     display: flex;
-    justify-content: center;
+    justify-content: space-around; /* distribuye imágenes uniformemente */
+    align-items: center;
     gap: 10px;
     margin: 10px 0;
+    width: 100%;
   }
-  img {
+  .fixed-container img {
+    max-height: 100px; /* límite de altura para no romper layout */
+    width: auto;
+    height: auto;
+    flex-shrink: 0; /* no se encogen demasiado */
+    cursor: default;
+    position: relative; /* ya no absoluto */
+  }
+  img.mobile {
     user-select: none;
     max-width: 150px;
     position: absolute;
@@ -39,7 +49,6 @@
   <script>
     const contentDiv = document.getElementById('content');
 
-    // Actualiza contenido en tiempo real
     window.electronAPI.onFileChange((text) => {
       contentDiv.textContent = text;
     });
@@ -51,17 +60,17 @@
       topDiv.innerHTML = '';
       bottomDiv.innerHTML = '';
 
+      // Banners Top
       bannersTop.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
-        img.style.position = 'static';
         topDiv.appendChild(img);
       });
 
+      // Banners Bottom
       bannersBottom.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
-        img.style.position = 'static';
         bottomDiv.appendChild(img);
       });
 
@@ -69,6 +78,7 @@
       mobileImgs.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
+        img.classList.add('mobile');
 
         img.style.left = Math.random() * (window.innerWidth - 150) + 'px';
         img.style.top = Math.random() * (window.innerHeight - 150) + 'px';
@@ -76,32 +86,7 @@
         img.style.height = 'auto';
 
         let offsetX, offsetY, isDragging = false;
-
-        img.addEventListener('mousedown', e => {
-          if (e.ctrlKey) return;
-          isDragging = true;
-          offsetX = e.clientX - img.offsetLeft;
-          offsetY = e.clientY - img.offsetTop;
-          img.style.cursor = 'grabbing';
-        });
-
-        document.addEventListener('mousemove', e => {
-          if (isDragging) {
-            img.style.left = (e.clientX - offsetX) + 'px';
-            img.style.top = (e.clientY - offsetY) + 'px';
-          }
-        });
-
-        document.addEventListener('mouseup', () => {
-          if (isDragging) {
-            isDragging = false;
-            img.style.cursor = 'grab';
-          }
-        });
-
-        // Escalar con Ctrl + arrastre vertical
-        let isScaling = false;
-        let startY, startHeight;
+        let isScaling = false, startY, startHeight;
 
         img.addEventListener('mousedown', e => {
           if (e.ctrlKey) {
@@ -109,6 +94,11 @@
             startY = e.clientY;
             startHeight = img.offsetHeight;
             e.preventDefault();
+          } else {
+            isDragging = true;
+            offsetX = e.clientX - img.offsetLeft;
+            offsetY = e.clientY - img.offsetTop;
+            img.style.cursor = 'grabbing';
           }
         });
 
@@ -118,10 +108,20 @@
             img.style.height = Math.max(50, startHeight + dy) + 'px';
             img.style.width = 'auto';
           }
+          if (isDragging) {
+            let newX = e.clientX - offsetX;
+            let newY = e.clientY - offsetY;
+            newX = Math.max(0, Math.min(window.innerWidth - img.offsetWidth, newX));
+            newY = Math.max(0, Math.min(window.innerHeight - img.offsetHeight, newY));
+            img.style.left = newX + 'px';
+            img.style.top = newY + 'px';
+          }
         });
 
         document.addEventListener('mouseup', () => {
-          if (isScaling) isScaling = false;
+          isDragging = false;
+          isScaling = false;
+          img.style.cursor = 'grab';
         });
 
         document.body.appendChild(img);
