@@ -2,93 +2,135 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Editor Live con Banners</title>
+<title>Mobile Movible y Escalable</title>
 <style>
   body {
     background-color: #1e1e1e;
     color: white;
     font-family: Consolas, monospace;
     font-size: 28px;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #content {
     padding: 20px;
     text-align: center;
     white-space: pre-wrap;
   }
 
-  .banner-container {
+  .fixed-container {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 10px;
     margin: 10px 0;
-    min-height: 160px;
-    border: 2px dashed #444;
-    flex-wrap: wrap;
   }
 
   img {
+    user-select: none;
     max-width: 150px;
+    position: absolute;
     cursor: grab;
   }
 </style>
 </head>
 <body>
-  <div id="banner-top" class="banner-container"></div>
+  <div id="banner-top" class="fixed-container"></div>
   <div id="content"></div>
-  <div id="mobile" class="banner-container"></div>
-  <div id="banner-bottom" class="banner-container"></div>
+  <div id="banner-bottom" class="fixed-container"></div>
 
   <script>
     const contentDiv = document.getElementById('content');
-    const containers = document.querySelectorAll('.banner-container');
 
     // Texto en tiempo real
     window.electronAPI.onFileChange((text) => {
       contentDiv.textContent = text;
     });
 
-    // Mostrar banners y hacerlos movibles
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
-      function createDraggableImage(src) {
+      const topDiv = document.getElementById('banner-top');
+      const bottomDiv = document.getElementById('banner-bottom');
+
+      // Limpiar contenedores fijos
+      topDiv.innerHTML = '';
+      bottomDiv.innerHTML = '';
+
+      // Mostrar banners top y bottom (fijos)
+      bannersTop.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
-        img.draggable = true;
-
-        img.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/plain', src);
-          e.dataTransfer.effectAllowed = 'move';
-          img.classList.add('dragging');
-        });
-
-        img.addEventListener('dragend', () => {
-          img.classList.remove('dragging');
-        });
-
-        return img;
-      }
-
-      function loadImages(container, images) {
-        container.innerHTML = '';
-        images.forEach(src => container.appendChild(createDraggableImage(src)));
-      }
-
-      loadImages(document.getElementById('banner-top'), bannersTop);
-      loadImages(document.getElementById('mobile'), mobileImgs);
-      loadImages(document.getElementById('banner-bottom'), bannersBottom);
-    });
-
-    // Permitir soltar en los contenedores
-    containers.forEach(container => {
-      container.addEventListener('dragover', (e) => {
-        e.preventDefault();
+        img.style.position = 'static';
+        topDiv.appendChild(img);
       });
 
-      container.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const src = e.dataTransfer.getData('text/plain');
-        const draggingImg = document.querySelector(`img[src='${src}'].dragging`);
-        if (draggingImg) {
-          container.appendChild(draggingImg);
-        }
+      bannersBottom.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.position = 'static';
+        bottomDiv.appendChild(img);
+      });
+
+      // Mobile movible y escalable
+      mobileImgs.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+
+        // Posición inicial aleatoria
+        img.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+        img.style.top = Math.random() * (window.innerHeight - 150) + 'px';
+        img.style.width = '150px';
+        img.style.height = 'auto';
+
+        let offsetX, offsetY, isDragging = false;
+
+        img.addEventListener('mousedown', e => {
+          if (e.ctrlKey) return; // no arrastrar si está Ctrl (para escalar)
+          isDragging = true;
+          offsetX = e.clientX - img.offsetLeft;
+          offsetY = e.clientY - img.offsetTop;
+          img.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', e => {
+          if (isDragging) {
+            img.style.left = (e.clientX - offsetX) + 'px';
+            img.style.top = (e.clientY - offsetY) + 'px';
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            img.style.cursor = 'grab';
+          }
+        });
+
+        // Escalar con Ctrl + arrastre vertical
+        let isScaling = false;
+        let startY, startHeight;
+
+        img.addEventListener('mousedown', e => {
+          if (e.ctrlKey) {
+            isScaling = true;
+            startY = e.clientY;
+            startHeight = img.offsetHeight;
+            e.preventDefault();
+          }
+        });
+
+        document.addEventListener('mousemove', e => {
+          if (isScaling) {
+            const dy = e.clientY - startY;
+            img.style.height = Math.max(50, startHeight + dy) + 'px';
+            img.style.width = 'auto'; // mantiene proporción
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isScaling) isScaling = false;
+        });
+
+        document.body.appendChild(img);
       });
     });
   </script>
