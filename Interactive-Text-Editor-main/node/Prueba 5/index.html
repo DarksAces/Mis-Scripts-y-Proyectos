@@ -12,20 +12,17 @@
     margin: 0;
     overflow: hidden;
   }
-
   #content {
     padding: 20px;
     text-align: center;
     white-space: pre-wrap;
   }
-
   .fixed-container {
     display: flex;
     justify-content: center;
     gap: 10px;
     margin: 10px 0;
   }
-
   img {
     user-select: none;
     max-width: 150px;
@@ -42,7 +39,7 @@
   <script>
     const contentDiv = document.getElementById('content');
 
-    // Texto en tiempo real
+    // Actualiza contenido en tiempo real
     window.electronAPI.onFileChange((text) => {
       contentDiv.textContent = text;
     });
@@ -51,11 +48,9 @@
       const topDiv = document.getElementById('banner-top');
       const bottomDiv = document.getElementById('banner-bottom');
 
-      // Limpiar contenedores fijos
       topDiv.innerHTML = '';
       bottomDiv.innerHTML = '';
 
-      // Mostrar banners top y bottom (fijos)
       bannersTop.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
@@ -70,12 +65,11 @@
         bottomDiv.appendChild(img);
       });
 
-      // Mobile movible y escalable
+      // Móviles movibles y escalables
       mobileImgs.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
 
-        // Posición inicial aleatoria
         img.style.left = Math.random() * (window.innerWidth - 150) + 'px';
         img.style.top = Math.random() * (window.innerHeight - 150) + 'px';
         img.style.width = '150px';
@@ -84,7 +78,7 @@
         let offsetX, offsetY, isDragging = false;
 
         img.addEventListener('mousedown', e => {
-          if (e.ctrlKey) return; // no arrastrar si está Ctrl (para escalar)
+          if (e.ctrlKey) return;
           isDragging = true;
           offsetX = e.clientX - img.offsetLeft;
           offsetY = e.clientY - img.offsetTop;
@@ -122,7 +116,7 @@
           if (isScaling) {
             const dy = e.clientY - startY;
             img.style.height = Math.max(50, startHeight + dy) + 'px';
-            img.style.width = 'auto'; // mantiene proporción
+            img.style.width = 'auto';
           }
         });
 
