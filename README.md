@@ -1,17 +1,7 @@
-# 📂 Mis Scripts y Proyectos
+# 📂 Mis Scripts
 
-Bienvenido a este repositorio, un espacio donde organizo y guardo **scripts, utilidades y proyectos personales**.  
-Aquí encontrarás desde pruebas rápidas hasta proyectos más estructurados y otros experimentos de programación.  
-
----
-
-## 🚀 Estructura del repositorio
-
-- `scripts/` → Pequeños programas y utilidades de uso rápido.  
-- `proyectos/` → Proyectos más grandes o de práctica.  
-- `apuntes/` → Material de estudio, ejemplos y pruebas varias.  
-- Otros directorios → Según vaya organizando el contenido.  
-
+Bienvenido a este repositorio, un espacio donde organizo y guardo scripts, utilidades y experimentos de programación.
+Aquí encontrarás desde pruebas rápidas hasta pequeños programas que he creado para aprender y automatizar tareas.
 ---
 
 
