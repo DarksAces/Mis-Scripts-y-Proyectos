@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,21 +17,22 @@ function createWindow() {
   win.loadFile('index.html');
 
   const filePath = path.join(__dirname, 'contenido.txt');
+  const dirPath = path.dirname(filePath);
   const imagesDir = path.join(__dirname, 'imagenes');
 
-  // Guardamos último contenido para comparar
-  let lastContent = '';
-
-  // Polling cada 2 segundos (ajusta el intervalo)
-  setInterval(() => {
-    if (fs.existsSync(filePath)) {
-      const text = fs.readFileSync(filePath, 'utf-8');
-      if (text !== lastContent) {
-        lastContent = text;
+  // Vigilar la carpeta donde está el archivo
+  fs.watch(dirPath, (eventType, filename) => {
+    if (filename === path.basename(filePath)) {
+      if (fs.existsSync(filePath)) {
+        // Se creó o modificó el archivo
+        const text = fs.readFileSync(filePath, 'utf-8');
         win.webContents.send('file-changed', text);
+      } else {
+        // Se eliminó el archivo
+        win.webContents.send('file-deleted');
       }
     }
-  }, 1000);
+  });
 
   // Leer imágenes de la carpeta al cargar
   if (fs.existsSync(imagesDir)) {
