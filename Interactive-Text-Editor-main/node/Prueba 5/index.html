@@ -2,50 +2,86 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Prueba Electron</title>
+<title>Editor Live con Banners</title>
 <style>
-  body { background-color: #1e1e1e; color: white; text-align: center; }
-  img { max-width: 100%; margin: 10px 0; }
+  body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: Consolas, monospace;
+    font-size: 28px;
+    padding: 20px;
+    text-align: center;
+    white-space: pre-wrap;
+  }
+
+  #banner-top, #mobile, #banner-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+  }
+
+  img {
+    max-width: 150px;
+    cursor: grab;
+  }
 </style>
 </head>
 <body>
-<h1 id="text">¡Hola Mundo!</h1>
-<div id="banner-top"></div>
-<div id="mobile"></div>
-<div id="banner-bottom"></div>
+  <div id="banner-top"></div>
+  <div id="content"></div>
+  <div id="mobile"></div>
+  <div id="banner-bottom"></div>
 
-<script>
-  // Usar la API segura expuesta por preload.js
-  window.electronAPI.onLoadImages((images) => {
-    const { bannersTop, mobileImgs, bannersBottom } = images;
+  <script>
+    const contentDiv = document.getElementById('content');
 
-    const topDiv = document.getElementById('banner-top');
-    const mobileDiv = document.getElementById('mobile');
-    const bottomDiv = document.getElementById('banner-bottom');
-
-    bannersTop.forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      topDiv.appendChild(img);
+    // Texto en tiempo real
+    window.electronAPI.onFileChange((text) => {
+      contentDiv.textContent = text;
     });
 
-    mobileImgs.forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      mobileDiv.appendChild(img);
-    });
+    // Mostrar banners
+    window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
+      const topDiv = document.getElementById('banner-top');
+      const mobileDiv = document.getElementById('mobile');
+      const bottomDiv = document.getElementById('banner-bottom');
 
-    bannersBottom.forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      bottomDiv.appendChild(img);
-    });
-  });
+      topDiv.innerHTML = '';
+      mobileDiv.innerHTML = '';
+      bottomDiv.innerHTML = '';
 
-  window.electronAPI.onFileChange((text) => {
-    const h1 = document.getElementById('text');
-    h1.textContent = text;
-  });
-</script>
+      // Función para hacer imágenes arrastrables
+      function makeDraggable(img) {
+        img.draggable = true;
+        img.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', e.target.src);
+        });
+      }
+
+      bannersTop.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        makeDraggable(img);
+        topDiv.appendChild(img);
+      });
+
+      mobileImgs.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        makeDraggable(img);
+        mobileDiv.appendChild(img);
+      });
+
+      bannersBottom.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        makeDraggable(img);
+        bottomDiv.appendChild(img);
+      });
+    });
+  </script>
 </body>
 </html>
