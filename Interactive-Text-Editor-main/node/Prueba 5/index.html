@@ -14,12 +14,14 @@
     white-space: pre-wrap;
   }
 
-  #banner-top, #mobile, #banner-bottom {
+  .banner-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     margin: 10px 0;
+    min-height: 160px;
+    border: 2px dashed #444;
     flex-wrap: wrap;
   }
 
@@ -30,56 +32,63 @@
 </style>
 </head>
 <body>
-  <div id="banner-top"></div>
+  <div id="banner-top" class="banner-container"></div>
   <div id="content"></div>
-  <div id="mobile"></div>
-  <div id="banner-bottom"></div>
+  <div id="mobile" class="banner-container"></div>
+  <div id="banner-bottom" class="banner-container"></div>
 
   <script>
     const contentDiv = document.getElementById('content');
+    const containers = document.querySelectorAll('.banner-container');
 
     // Texto en tiempo real
     window.electronAPI.onFileChange((text) => {
       contentDiv.textContent = text;
     });
 
-    // Mostrar banners
+    // Mostrar banners y hacerlos movibles
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
-      const topDiv = document.getElementById('banner-top');
-      const mobileDiv = document.getElementById('mobile');
-      const bottomDiv = document.getElementById('banner-bottom');
-
-      topDiv.innerHTML = '';
-      mobileDiv.innerHTML = '';
-      bottomDiv.innerHTML = '';
-
-      // Función para hacer imágenes arrastrables
-      function makeDraggable(img) {
+      function createDraggableImage(src) {
+        const img = document.createElement('img');
+        img.src = src;
         img.draggable = true;
-        img.addEventListener('dragstart', e => {
-          e.dataTransfer.setData('text/plain', e.target.src);
+
+        img.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', src);
+          e.dataTransfer.effectAllowed = 'move';
+          img.classList.add('dragging');
         });
+
+        img.addEventListener('dragend', () => {
+          img.classList.remove('dragging');
+        });
+
+        return img;
       }
 
-      bannersTop.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        makeDraggable(img);
-        topDiv.appendChild(img);
+      function loadImages(container, images) {
+        container.innerHTML = '';
+        images.forEach(src => container.appendChild(createDraggableImage(src)));
+      }
+
+      loadImages(document.getElementById('banner-top'), bannersTop);
+      loadImages(document.getElementById('mobile'), mobileImgs);
+      loadImages(document.getElementById('banner-bottom'), bannersBottom);
+    });
+
+    // Permitir soltar en los contenedores
+    containers.forEach(container => {
+      container.addEventListener('dragover', (e) => {
+        e.preventDefault();
       });
 
-      mobileImgs.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        makeDraggable(img);
-        mobileDiv.appendChild(img);
-      });
-
-      bannersBottom.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        makeDraggable(img);
-        bottomDiv.appendChild(img);
+      container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const src = e.dataTransfer.getData('text/plain');
+        const draggingImg = document.querySelector(`img[src='${src}'].dragging`);
+        if (draggingImg) {
+          container.appendChild(draggingImg);
+        }
       });
     });
   </script>
