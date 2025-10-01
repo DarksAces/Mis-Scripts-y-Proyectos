@@ -11,7 +11,7 @@
     font-size: 28px;
     margin: 0;
     height: 100vh;
-    overflow: hidden; /* el scroll será solo en content-wrapper */
+    overflow: hidden; /* scroll solo en content-wrapper */
   }
 
   #banner-top {
@@ -58,7 +58,7 @@
     bottom: 100px; /* encima del banner inferior */
     left: 0;
     right: 0;
-    overflow-y: auto; /* ✅ scroll solo aquí */
+    overflow-y: auto; /* ✅ scroll aquí */
     padding: 10px;
   }
 
@@ -73,7 +73,7 @@
     max-width: 150px;
     position: absolute;
     cursor: grab;
-      z-index: 9999;
+    z-index: 9999;
   }
 </style>
 </head>
@@ -88,13 +88,21 @@
 
   <script>
     const contentDiv = document.getElementById('content');
+    const wrapper = document.getElementById('content-wrapper');
     let fullText = "";
 
     // Recibir el texto desde main.js
     window.electronAPI.onFileChange((text) => {
+      // Detectamos si el usuario ya estaba abajo
+      const isAtBottom = wrapper.scrollHeight - wrapper.scrollTop <= wrapper.clientHeight + 10;
+
       fullText = text;
-      // ✅ ahora mostramos todo el contenido (no solo las últimas 11 líneas)
       contentDiv.textContent = fullText;
+
+      // ✅ Solo autoscroll si ya estaba abajo
+      if (isAtBottom) {
+        wrapper.scrollTop = wrapper.scrollHeight;
+      }
     });
 
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
