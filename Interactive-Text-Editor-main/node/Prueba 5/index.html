@@ -6,21 +6,24 @@
 <style>
   body {
     background-color: #ffffff;
-    color: rgb(0, 0, 0);
+    color: #000;
     font-family: Consolas, monospace;
     font-size: 28px;
     margin: 0;
-    overflow: hidden; /* no scroll de body */
+    height: 100vh;
+    overflow: hidden; /* el scroll será solo en content-wrapper */
   }
 
   #banner-top {
     position: fixed;
     top: 0;
     left: 0;
+    width: 100%;
     display: flex;
     align-items: flex-start;
     height: 100px;
     z-index: 10;
+    background: #fff;
   }
 
   #banner-top img {
@@ -39,6 +42,7 @@
     align-items: flex-end;
     height: 100px;
     z-index: 10;
+    background: #fff;
   }
 
   #banner-bottom img {
@@ -50,21 +54,18 @@
 
   #content-wrapper {
     position: absolute;
-    top: 100px;      /* debajo del banner superior */
-    bottom: 100px;   /* arriba del banner inferior */
+    top: 100px;    /* debajo del banner superior */
+    bottom: 100px; /* encima del banner inferior */
     left: 0;
     right: 0;
-    display: flex;
-    align-items: center;   /* centra verticalmente */
-    justify-content: center; /* opcional: centra horizontalmente */
+    overflow-y: auto; /* ✅ scroll solo aquí */
+    padding: 10px;
   }
 
   #content {
-    overflow: hidden; /* no scroll manual */
     white-space: pre-wrap;
     line-height: 32px;
-    height: calc(32px * 11); /* 11 líneas visibles */
-    text-align: center;       /* opcional, centra el texto */
+    text-align: center;
   }
 
   img.mobile {
@@ -72,26 +73,28 @@
     max-width: 150px;
     position: absolute;
     cursor: grab;
+      z-index: 9999;
   }
 </style>
 </head>
 <body>
   <div id="banner-top"></div>
+
   <div id="content-wrapper">
     <div id="content"></div>
   </div>
+
   <div id="banner-bottom"></div>
 
   <script>
     const contentDiv = document.getElementById('content');
-    let fullText = ""; // guardamos todo el contenido
+    let fullText = "";
 
+    // Recibir el texto desde main.js
     window.electronAPI.onFileChange((text) => {
       fullText = text;
-      // Dividimos en líneas y tomamos las últimas 11
-      const lines = fullText.split('\n');
-      const lastLines = lines.slice(-11).join('\n');
-      contentDiv.textContent = lastLines;
+      // ✅ ahora mostramos todo el contenido (no solo las últimas 11 líneas)
+      contentDiv.textContent = fullText;
     });
 
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
@@ -113,7 +116,7 @@
         bottomDiv.appendChild(img);
       });
 
-      // Móviles movibles y escalables
+      // Imágenes móviles movibles y escalables
       mobileImgs.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
