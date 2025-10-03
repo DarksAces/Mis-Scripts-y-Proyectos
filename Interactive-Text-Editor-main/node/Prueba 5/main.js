@@ -10,8 +10,8 @@ let lastUserText = null;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 800,
+    height: 400,
     resizable: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
