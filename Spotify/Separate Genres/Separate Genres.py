@@ -5,10 +5,12 @@ from requests.exceptions import ReadTimeout
 from spotipy.exceptions import SpotifyException
 
 # Authentication configuration
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id='Your Client ID',
-                                               client_secret='Your Secret Client',
-                                               redirect_uri='http://localhost:8888/callback',
-                                               scope='playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+    redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+    scope='playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
+))
 
 # Get user playlists
 def get_user_playlists():
