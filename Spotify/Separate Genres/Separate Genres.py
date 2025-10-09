@@ -5,6 +5,7 @@ from requests.exceptions import ReadTimeout
 from spotipy.exceptions import SpotifyException
 
 # Authentication configuration
+import os
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=os.getenv("SPOTIFY_CLIENT_ID"),
     client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
