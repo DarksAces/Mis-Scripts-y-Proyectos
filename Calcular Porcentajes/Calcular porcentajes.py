@@ -1,5 +1,5 @@
-total = int(input("Ingresa el total: "))
-parte = int(input("Ingresa la parte que quieres calcular: "))
+total = float(input("Ingresa el total: "))
+parte = float(input("Ingresa la parte que quieres calcular: "))
 porcentaje = (parte / total) * 100
 
 opcion = int(input("¿Quieres decimales? (1 = sí, 2 = no): "))
