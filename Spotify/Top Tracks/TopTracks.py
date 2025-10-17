@@ -14,6 +14,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope=["playlist-modify-public", "playlist-modify-private"]
 ))
 
+
 usuario_id = sp.current_user()['id']
 
 # Preguntar si crear nueva playlist o usar existente

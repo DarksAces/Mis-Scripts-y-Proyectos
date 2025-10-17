@@ -6,11 +6,13 @@ from spotipy.exceptions import SpotifyOauthError
 # ------------------- AUTENTICACIÓN -------------------
 try:
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
-        redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
-        scope='user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
-    ))
+    client_id=os.getenv("SPOTIPY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
+    redirect_uri=os.getenv("SPOTIPY_REDIRECT_URI"),
+    scope=["playlist-modify-public", "playlist-modify-private"]
+))
+    
+    
 except SpotifyOauthError as e:
     print(f"\n❌ Error de autenticación: {e}")
     print("Revisa tus credenciales o variables de entorno (CLIENT_ID, CLIENT_SECRET, REDIRECT_URI).")
