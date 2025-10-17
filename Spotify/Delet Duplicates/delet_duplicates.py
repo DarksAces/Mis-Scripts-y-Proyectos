@@ -12,6 +12,7 @@ try:
         redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
         scope='user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
     ))
+
 except SpotifyOauthError as e:
     print(f"\n❌ Error de autenticación: {e}")
     print("Revisa tus credenciales o variables de entorno (CLIENT_ID, CLIENT_SECRET, REDIRECT_URI).")
