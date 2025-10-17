@@ -1,0 +1,50 @@
+# =============================
+# Archivos temporales de Visual Studio
+# =============================
+.vs/
+*.user
+*.suo
+*.ipch
+*.VC.db
+*.VC.opendb
+
+# =============================
+# Carpetas de compilación y binarios
+# =============================
+bin/
+obj/
+Debug/
+Release/
+
+# Archivos de backup y logs
+*.bak
+*.tmp
+*.log
+
+# =============================
+# Archivos generados de compilación de C++/SFML
+# =============================
+*.pdb
+*.lib
+*.dll
+*.so
+
+# =============================
+# Recursos grandes
+# =============================
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.docx
+
+# =============================
+# Node / JavaScript
+# =============================
+node_modules/
+*.package-lock.json
+
+# =============================
+# Java / NetBeans / IntelliJ
+# =============================
+nbproject/build-impl.xml
