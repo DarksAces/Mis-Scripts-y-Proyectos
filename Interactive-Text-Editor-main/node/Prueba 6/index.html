@@ -2,21 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mobile Movible y Escalable</title>
+<title>Pantalla de Caja Dinámica</title>
 <style>
-  .welcome {
-  display: block;
-  margin: 50px auto 20px;
-  max-width: 300px;
-  height: auto;
-  opacity: 0;
-  animation: fadeIn 1.2s forwards;
-}
-
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
   body {
     background-color: #ffffff;
     color: #000;
@@ -103,6 +90,31 @@
     font-size: 22px;
     color: #555;
   }
+
+  /* Animación línea por línea */
+  .line {
+    opacity: 0;
+    transform: translateY(10px);
+    display: block;
+    animation: lineFadeIn 0.3s forwards;
+  }
+
+  @keyframes lineFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Animación fade-in para bienvenida */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
@@ -117,36 +129,45 @@
   <script>
     const contentDiv = document.getElementById('content');
     const wrapper = document.getElementById('content-wrapper');
-    let fullText = "";
 
-    // Texto desde contenido.txt
-// Recibir contenido
+    // Mostrar contenido línea por línea
 window.electronAPI.onFileChange((text) => {
-  contentDiv.innerHTML = ''; // Limpiar bienvenida si estaba
-  const isAtBottom = wrapper.scrollHeight - wrapper.scrollTop <= wrapper.clientHeight + 10;
-  contentDiv.textContent = text;
-  if (isAtBottom) wrapper.scrollTop = wrapper.scrollHeight;
-});
+  contentDiv.innerHTML = ''; // Limpiar contenido anterior
+  const lines = text.split('\n');
+  lines.forEach((line, index) => {
+    const lineDiv = document.createElement('div');
+    lineDiv.textContent = line;
+    lineDiv.classList.add('line');
+    lineDiv.style.animationDelay = `${index * 0.1}s`; // retraso por línea
+    contentDiv.appendChild(lineDiv);
+  });
 
-// Recibir bienvenida
-window.electronAPI.onNoFile(({ welcomePath }) => {
-  contentDiv.innerHTML = '';
-
-  const welcomeImg = document.createElement('img');
-  welcomeImg.src = welcomePath;
-  welcomeImg.alt = 'Bienvenido';
-  welcomeImg.classList.add('welcome');
-
-  const msg = document.createElement('div');
-  msg.textContent = '¡Bienvenido! En breve comenzaremos a atenderle.'; // mensaje para cliente
-  msg.classList.add('welcome-text');
-
-  contentDiv.appendChild(welcomeImg);
-  contentDiv.appendChild(msg);
+  // ⚡ Auto-scroll siempre al final
+  wrapper.scrollTop = wrapper.scrollHeight;
 });
 
 
-    // Banners e imágenes móviles
+    // Mostrar pantalla de bienvenida
+    window.electronAPI.onNoFile(({ welcomePath }) => {
+      contentDiv.innerHTML = '';
+      const welcomeImg = document.createElement('img');
+      welcomeImg.src = welcomePath;
+      welcomeImg.alt = 'Bienvenido';
+      welcomeImg.classList.add('welcome');
+
+      const msg = document.createElement('div');
+      msg.textContent = '¡Bienvenido! En breve comenzaremos a atenderle.';
+      msg.classList.add('welcome-text');
+
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.classList.add('fade-in');
+      wrapperDiv.appendChild(welcomeImg);
+      wrapperDiv.appendChild(msg);
+
+      contentDiv.appendChild(wrapperDiv);
+    });
+
+    // Cargar banners y móviles
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
       const topDiv = document.getElementById('banner-top');
       const bottomDiv = document.getElementById('banner-bottom');
@@ -165,7 +186,6 @@ window.electronAPI.onNoFile(({ welcomePath }) => {
         bottomDiv.appendChild(img);
       });
 
-      // Imágenes móviles movibles y escalables
       mobileImgs.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
@@ -217,23 +237,6 @@ window.electronAPI.onNoFile(({ welcomePath }) => {
 
         document.body.appendChild(img);
       });
-    });
-
-    // 💡 Mostrar imagen de bienvenida si no hay contenido.txt
-    window.electronAPI.onNoFile(({ welcomePath }) => {
-      contentDiv.innerHTML = '';
-
-      const welcomeImg = document.createElement('img');
-      welcomeImg.src = welcomePath;
-      welcomeImg.alt = 'Bienvenido';
-      welcomeImg.classList.add('welcome');
-
-      const msg = document.createElement('div');
-      msg.textContent = "¡Bienvenido! Estamos listos para atenderle.";
-      msg.classList.add('welcome-text');
-
-      contentDiv.appendChild(welcomeImg);
-      contentDiv.appendChild(msg);
     });
   </script>
 </body>
