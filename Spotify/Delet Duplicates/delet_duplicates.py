@@ -12,7 +12,6 @@ try:
         redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
         scope='user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
     ))
-
 except SpotifyOauthError as e:
     print(f"\n❌ Error de autenticación: {e}")
     print("Revisa tus credenciales o variables de entorno (CLIENT_ID, CLIENT_SECRET, REDIRECT_URI).")
@@ -40,10 +39,7 @@ if choice == "2":
         offset += 50
 else:
     playlist_url = input("\nIntroduce la URL o el ID de la playlist: ").strip()
-    if "playlist/" in playlist_url:
-        playlist_id = playlist_url.split("playlist/")[1].split("?")[0]
-    else:
-        playlist_id = playlist_url
+    playlist_id = playlist_url.split("playlist/")[1].split("?")[0] if "playlist/" in playlist_url else playlist_url
 
     try:
         playlist = sp.playlist(playlist_id, fields="name")
@@ -86,29 +82,41 @@ if not duplicados_grupos:
     print("\n✅ No se encontraron duplicados. Todo limpio y ordenado 🎶")
 else:
     print(f"\n⚠️ Se encontraron {len(duplicados_grupos)} grupos de duplicados.")
+
+    # Preguntar si borrar todas manteniendo solo la primera copia
+    borrar_todas = input("¿Quieres borrar todas las duplicadas manteniendo solo la primera copia? (S (mantener solo uan copia) /n (Revisar manualmente)): ").strip().lower()
+    
     tracks_to_delete = []
 
-    for clave, group in duplicados_grupos.items():
-        track_info = group[0]["track"]
-        print(f"\n🎵 {track_info['name']} - {', '.join([a['name'] for a in track_info['artists']])}")
-        print("Duplicados encontrados:")
-        for i, t in enumerate(group, 1):
-            print(f"  {i}. Posición {t['pos']}: {t['track']['name']} - {', '.join([a['name'] for a in t['track']['artists']])}")
-        to_delete = input("👉 Introduce los números de las canciones a borrar (ej. 1,3) o 'ninguna': ").strip()
-
-        if to_delete.lower() != "ninguna":
-            indices = [int(x.strip()) - 1 for x in to_delete.split(",") if x.strip().isdigit()]
-            for i in indices:
-                if 0 <= i < len(group):
-                    tracks_to_delete.append(group[i]["track"]["id"])
+    if borrar_todas == "s":
+        for group in duplicados_grupos.values():
+            # Mantener la primera canción, borrar el resto
+            for item in group[1:]:
+                tracks_to_delete.append(item['track']['id'])
+    else:
+        # Opción manual por grupo
+        for clave, group in duplicados_grupos.items():
+            track_info = group[0]["track"]
+            print(f"\n🎵 {track_info['name']} - {', '.join([a['name'] for a in track_info['artists']])}")
+            print("Duplicados encontrados:")
+            for i, t in enumerate(group, 1):
+                print(f"  {i}. Posición {t['pos']}: {t['track']['name']} - {', '.join([a['name'] for a in t['track']['artists']])}")
+            to_delete = input("👉 Introduce los números de las canciones a borrar (ej. 1,3) o 'ninguna': ").strip()
+            if to_delete.lower() != "ninguna":
+                indices = [int(x.strip()) - 1 for x in to_delete.split(",") if x.strip().isdigit()]
+                for i in indices:
+                    if 0 <= i < len(group):
+                        tracks_to_delete.append(group[i]["track"]["id"])
 
     # ------------------- ELIMINAR -------------------
     if tracks_to_delete:
         if playlist_id:
-            sp.playlist_remove_all_occurrences_of_items(playlist_id, tracks_to_delete)
-            print(f"\n✅ Se eliminaron {len(tracks_to_delete)} canciones duplicadas de '{playlist_name}'.")
+            # Eliminar en bloques de 100 canciones
+            for i in range(0, len(tracks_to_delete), 100):
+                sp.playlist_remove_all_occurrences_of_items(playlist_id, tracks_to_delete[i:i+100])
+            print(f"\n✅ Se eliminaron {len(tracks_to_delete)} duplicados de '{playlist_name}', manteniendo una copia de cada canción.")
         else:
-            print("\n⚠️ Spotify no permite eliminar canciones directamente de tus favoritos.")
+            print("\n⚠️ No se pueden eliminar canciones directamente de tus Favoritos.")
             print("Puedes crear una playlist nueva sin duplicados si lo deseas.")
             create = input("\n¿Quieres crear una nueva playlist limpia? (s/n): ").strip().lower()
             if create == "s":
